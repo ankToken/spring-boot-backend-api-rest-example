@@ -14,4 +14,4 @@ target/
 .sts4-cache
 
 ### PROJECT ###
-.properties
+src/main/resources/application.properties
