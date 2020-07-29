@@ -1,4 +1,8 @@
-# REST API with Spring Boot and MySQL.
+# REST API with Spring Boot and MySQL
+This is a CRUD for clients module. This was made using Spring Boot and MySQL.\
+The objective of this example is that in a future I mix this with an Angular Front-End project.\
+Anyway you can use this code if you need it.
+___
 
 ## Modules
 - Clients ("/api/clients").
