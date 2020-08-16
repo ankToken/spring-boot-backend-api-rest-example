@@ -15,4 +15,4 @@ In order to run this project, you need to:
 
 - Add **application.properties** with your database configuration.
 - Add **import.sql** with your test database insert (Optional).
-
+___
