@@ -3,11 +3,15 @@ package com.filosofiadalvik.spring.boot.backend.api.rest.example.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.filosofiadalvik.spring.boot.backend.api.rest.example.models.entity.Client;
@@ -55,9 +58,27 @@ public class ClientRestController {
 	}
 	
 	@PostMapping("/clients")
-	public ResponseEntity<?> create(@RequestBody Client client) {
+	public ResponseEntity<?> create(@Valid @RequestBody Client client, BindingResult result) {
 		Client newClient = null;
 		Map<String, Object> response = new HashMap<>();
+		
+		if (result.hasErrors()) {
+			
+			/* Legacy way to do this.
+			List<String> errors = new ArrayList<>();
+			for (FieldError error: result.getFieldErrors(field)) {
+				errors.add("The field '" + error.getField() + "' has an error: " + error.getDefaultMessage());
+			}*/
+			
+			//The Java 8 way, functional.
+			List<String> errors = result.getFieldErrors()
+					.stream()
+					.map(error -> "The field '" + error.getField() + "' has an error: " + error.getDefaultMessage())
+					.collect(Collectors.toList());
+			
+			response.put("errors", errors);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+		}
 		
 		try {
 			newClient = clientService.save(client);
@@ -72,10 +93,20 @@ public class ClientRestController {
 	}
 	
 	@PutMapping("/clients/{id}")
-	public ResponseEntity<?> update(@RequestBody Client client, @PathVariable Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody Client client, BindingResult result, @PathVariable Long id) {
 		Client currentClient = clientService.findById(id);
 		Client updatedClient = null;
 		Map<String, Object> response = new HashMap<>();
+		
+		if (result.hasErrors()) {
+			List<String> errors = result.getFieldErrors()
+					.stream()
+					.map(error -> "The field '" + error.getField() + "' has an error: " + error.getDefaultMessage())
+					.collect(Collectors.toList());
+			
+			response.put("errors", errors);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+		}
 		
 		if (currentClient == null) {
 			response.put("message", "Client with ID: ".concat(id.toString().concat(" was not found.")));
